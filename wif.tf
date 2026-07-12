@@ -11,7 +11,7 @@ resource "google_iam_workload_identity_pool_provider" "github_oidc" {
   project                            = var.project_id
   workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-oidc-${var.environment}"
-  display_name                       = "GitHub OIDC (${var.github_org}/${var.github_repo})"
+  display_name                       = "GitHub OIDC (${var.environment})"
   description                        = "Allows ${var.github_org}/${var.github_repo} to authenticate via OIDC"
 
   attribute_mapping = {
