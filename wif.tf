@@ -32,3 +32,37 @@ resource "google_service_account_iam_member" "wif_token_creator" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${var.github_repo}"
 }
+
+# Additional OIDC providers — one per entry in var.additional_repos.
+# Each provider is scoped to a single extra repo in the same org, using the same pool
+# and impersonating the same publisher SA. Provider ID: github-oidc-<key>-<environment>
+# (e.g. key "common" → github-oidc-common-dev). Display name kept ≤ 32 chars (GCP limit).
+resource "google_iam_workload_identity_pool_provider" "github_oidc_extra" {
+  for_each = var.additional_repos
+
+  project                            = var.project_id
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
+  workload_identity_pool_provider_id = "github-oidc-${each.key}-${var.environment}"
+  display_name                       = "GitHub OIDC ${each.key} (${var.environment})"
+  description                        = "Allows ${var.github_org}/${each.value} to authenticate via OIDC"
+
+  attribute_mapping = {
+    "google.subject"       = "assertion.sub"
+    "attribute.repository" = "assertion.repository"
+  }
+
+  attribute_condition = "assertion.repository == '${var.github_org}/${each.value}'"
+
+  oidc {
+    issuer_uri = "https://token.actions.githubusercontent.com"
+  }
+}
+
+# Allow each extra WIF provider to impersonate the same publisher SA
+resource "google_service_account_iam_member" "wif_token_creator_extra" {
+  for_each = var.additional_repos
+
+  service_account_id = google_service_account.publisher.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${each.value}"
+}

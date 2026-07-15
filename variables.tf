@@ -39,6 +39,12 @@ variable "environment" {
   }
 }
 
+variable "additional_repos" {
+  description = "Extra GitHub repos that each get their own OIDC provider in the SAME pool, impersonating the SAME publisher SA. Map of provider-suffix => repo name (without org), e.g. { common = \"stratum-common\" } creates provider id github-oidc-common-<environment>. Defaults to empty (no extra providers)."
+  type        = map(string)
+  default     = {}
+}
+
 variable "tags" {
   description = "Labels applied to all resources that support them."
   type        = map(string)
