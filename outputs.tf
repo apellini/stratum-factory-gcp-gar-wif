@@ -27,3 +27,8 @@ output "wif_service_account" {
   description = "Email of the publisher SA that GitHub Actions impersonates via WIF."
   value       = google_service_account.publisher.email
 }
+
+output "wif_providers_additional" {
+  description = "Map of provider suffix => full WIF provider resource name for each additional repo (e.g. common => projects/.../providers/github-oidc-common-dev). Set as WIF_PROVIDER in the extra repo's Actions vars."
+  value       = { for k, p in google_iam_workload_identity_pool_provider.github_oidc_extra : k => p.name }
+}

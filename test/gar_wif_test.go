@@ -15,12 +15,13 @@ func tofuOptions(t *testing.T) *terraform.Options {
 		TerraformBinary: "tofu",
 		NoColor:         true,
 		Vars: map[string]interface{}{
-			"project_id":      "stratum-dev-sandbox",
-			"location":        "europe-west1",
-			"repository_name": "stratum-python",
-			"github_org":      "apellini",
-			"github_repo":     "stratum-proto",
-			"environment":     "dev",
+			"project_id":       "stratum-dev-sandbox",
+			"location":         "europe-west1",
+			"repository_name":  "stratum-python",
+			"github_org":       "apellini",
+			"github_repo":      "stratum-proto",
+			"environment":      "dev",
+			"additional_repos": map[string]interface{}{"common": "stratum-common"},
 		},
 	}
 }
@@ -38,7 +39,7 @@ func TestValidateSucceeds(t *testing.T) {
 	assert.NoError(t, err, "tofu validate failed — HCL structure, resource references, or output declarations are invalid")
 }
 
-// TestAllOutputsDeclared verifies that all six outputs required by stratum-proto CI
+// TestAllOutputsDeclared verifies that all outputs required by stratum-proto and stratum-common CI
 // are declared in the module. Variable validation conditions and output values are
 // evaluated at plan time (requires cloud credentials); this test covers declaration only.
 func TestAllOutputsDeclared(t *testing.T) {
@@ -50,5 +51,5 @@ func TestAllOutputsDeclared(t *testing.T) {
 
 	_, err = terraform.RunTerraformCommandE(t, opts, "validate")
 	require.NoError(t, err, "tofu validate failed")
-	t.Log("✅ PASS: all six CI outputs declared (gar_location, gar_project_id, gar_repository, gar_package_index_url, wif_provider, wif_service_account)")
+	t.Log("✅ PASS: all CI outputs declared (gar_location, gar_project_id, gar_repository, gar_package_index_url, wif_provider, wif_service_account, wif_providers_additional)")
 }
